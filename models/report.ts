@@ -4,6 +4,9 @@ export type Report = {
   lng: number;
   severity: 'green' | 'yellow' | 'red' | string;
   reportsCount: number;
+  aiScore?: number | null;
+  aiPointsAwarded?: number | null;
+  aiCleaned?: boolean | null;
 };
 
 export function reportFromJson(json: any): Report {
@@ -13,6 +16,8 @@ export function reportFromJson(json: any): Report {
     lng: json.lng,
     severity: json.severity,
     reportsCount: json.reports_count,
+    aiScore: json.ai_score ?? null,
+    aiPointsAwarded: json.ai_points_awarded ?? null,
+    aiCleaned: json.ai_cleaned ?? null,
   };
 }
-

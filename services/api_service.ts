@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from '@/constants/ecohunt';
+import { AuthStorage } from './auth_storage';
 import type { Friend } from '@/models/friend';
 import { friendFromJson } from '@/models/friend';
 import type { LeaderboardEntry } from '@/models/leaderboard_entry';
@@ -13,43 +14,83 @@ export class ApiService {
     return getApiBaseUrl();
   }
 
-  async getMe(token: string): Promise<User> {
+  private async authHeaders(): Promise<Record<string, string>> {
+    const token = await AuthStorage.get();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  async getMe(): Promise<User> {
     const res = await fetch(`${this.baseUrl()}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: await this.authHeaders(),
     });
     return userFromJson(await res.json());
   }
 
-  async getFriends(token: string): Promise<Friend[]> {
+  async getFriends(): Promise<Friend[]> {
     const res = await fetch(`${this.baseUrl()}/friends`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: await this.authHeaders(),
     });
     const data = (await res.json()) as any[];
     return data.map(friendFromJson);
   }
 
-  async getReports(token: string): Promise<Report[]> {
+  async getReports(): Promise<Report[]> {
     const res = await fetch(`${this.baseUrl()}/reports`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: await this.authHeaders(),
     });
     const data = (await res.json()) as any[];
     return data.map(reportFromJson);
   }
 
-  async getGlobalLeaderboard(token: string): Promise<LeaderboardEntry[]> {
+  async createReport(lat: number, lng: number, imageUri: string): Promise<Report> {
+    const headers = await this.authHeaders();
+    const form = new FormData();
+    form.append('lat', String(lat));
+    form.append('lng', String(lng));
+    form.append('image_before', {
+      uri: imageUri,
+      name: 'before.jpg',
+      type: 'image/jpeg',
+    } as any);
+
+    const res = await fetch(`${this.baseUrl()}/reports`, {
+      method: 'POST',
+      headers,
+      body: form,
+    });
+    return reportFromJson(await res.json());
+  }
+
+  async cleanReport(reportId: number, imageUri: string): Promise<Report> {
+    const headers = await this.authHeaders();
+    const form = new FormData();
+    form.append('image_after', {
+      uri: imageUri,
+      name: 'after.jpg',
+      type: 'image/jpeg',
+    } as any);
+
+    const res = await fetch(`${this.baseUrl()}/reports/${reportId}/clean`, {
+      method: 'POST',
+      headers,
+      body: form,
+    });
+    return reportFromJson(await res.json());
+  }
+
+  async getGlobalLeaderboard(): Promise<LeaderboardEntry[]> {
     const res = await fetch(`${this.baseUrl()}/leaderboard/global`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: await this.authHeaders(),
     });
     const data = (await res.json()) as any[];
     return data.map(leaderboardEntryFromJson);
   }
 
-  async getFriendsLeaderboard(token: string): Promise<LeaderboardEntry[]> {
+  async getFriendsLeaderboard(): Promise<LeaderboardEntry[]> {
     const res = await fetch(`${this.baseUrl()}/leaderboard/friends`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: await this.authHeaders(),
     });
     const data = (await res.json()) as any[];
     return data.map(leaderboardEntryFromJson);
   }
 }
-

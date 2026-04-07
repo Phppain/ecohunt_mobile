@@ -1,0 +1,2331 @@
+This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching these patterns are excluded: node_modules, __pycache__, .git, *.png, *.jpg
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+app/
+  (tabs)/
+    _layout.tsx
+    explore.tsx
+    friends.tsx
+    index.tsx
+    leaderboard.tsx
+    profile.tsx
+  _layout.tsx
+  login.tsx
+  modal.tsx
+  register.tsx
+assets/
+  images/
+    android-icon-background.png
+    android-icon-foreground.png
+    android-icon-monochrome.png
+    favicon.png
+    icon.png
+    partial-react-logo.png
+    react-logo.png
+    react-logo@2x.png
+    react-logo@3x.png
+    splash-icon.png
+components/
+  map/
+    MapWidget.tsx
+  ui/
+    collapsible.tsx
+    eco-button.tsx
+    eco-card.tsx
+    eco-text-input.tsx
+    icon-symbol.ios.tsx
+    icon-symbol.tsx
+  external-link.tsx
+  haptic-tab.tsx
+  hello-wave.tsx
+  parallax-scroll-view.tsx
+  themed-text.tsx
+  themed-view.tsx
+constants/
+  ecohunt.ts
+  theme.ts
+hooks/
+  use-color-scheme.ts
+  use-color-scheme.web.ts
+  use-theme-color.ts
+models/
+  friend.ts
+  leaderboard_entry.ts
+  report.ts
+  user.ts
+scripts/
+  reset-project.js
+services/
+  api_service.ts
+  auth_service.ts
+.gitignore
+app.json
+eslint.config.js
+package.json
+README.md
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="app/(tabs)/_layout.tsx">
+import { Tabs } from 'expo-router';
+import React from 'react';
+
+import { HapticTab } from '@/components/haptic-tab';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
+export default function TabLayout() {
+  const colorScheme = useColorScheme();
+
+  return (
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        headerShown: false,
+        tabBarButton: HapticTab,
+      }}>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'EcoMap',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="leaf.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: 'Report',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="exclamationmark.triangle.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="friends"
+        options={{
+          title: 'Friends',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="leaderboard"
+        options={{
+          title: 'Leaderboard',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="trophy.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+        }}
+      />
+    </Tabs>
+  );
+}
+</file>
+
+<file path="app/(tabs)/explore.tsx">
+import React, { useState } from 'react';
+import { Image as ExpoImage } from 'expo-image';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { EcoButton } from '@/components/ui/eco-button';
+import { EcoCard } from '@/components/ui/eco-card';
+
+export default function ReportScreen() {
+  const [imageBeforeUri, setImageBeforeUri] = useState<string | null>(null);
+  const [imageAfterUri, setImageAfterUri] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const pickBeforeImage = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const perm = await ImagePicker.requestCameraPermissionsAsync();
+      if (!perm.granted) return;
+
+      const res = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.85,
+      });
+
+      if (!res.canceled) {
+        setImageBeforeUri(res.assets[0]?.uri ?? null);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const pickAfterImage = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const perm = await ImagePicker.requestCameraPermissionsAsync();
+      if (!perm.granted) return;
+
+      const res = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.85,
+      });
+
+      if (!res.canceled) {
+        setImageAfterUri(res.assets[0]?.uri ?? null);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createReport = async () => {
+    if (!imageBeforeUri) return;
+    console.log(`Report created с фото: ${imageBeforeUri}`);
+  };
+
+  const cleanReport = async () => {
+    if (!imageAfterUri) return;
+    console.log(`Report cleaned с фото: ${imageAfterUri}`);
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <ThemedText type="title" style={styles.title}>
+            Report
+          </ThemedText>
+          <ThemedText style={styles.subtitle}>Send before/after photos to mark eco issues.</ThemedText>
+        </View>
+
+        <EcoCard>
+          <ThemedText style={styles.sectionTitle}>Before</ThemedText>
+          <EcoButton title="Pick Before Image" onPress={pickBeforeImage} disabled={loading} />
+          {imageBeforeUri ? (
+            <ExpoImage source={{ uri: imageBeforeUri }} style={styles.preview} />
+          ) : (
+            <ThemedText style={styles.empty}>No photo selected.</ThemedText>
+          )}
+          <EcoButton title="Create Report" onPress={createReport} disabled={!imageBeforeUri || loading} style={{ marginTop: 12 }} />
+        </EcoCard>
+
+        <View style={styles.spacer} />
+
+        <EcoCard>
+          <ThemedText style={styles.sectionTitle}>After</ThemedText>
+          <EcoButton title="Pick After Image" onPress={pickAfterImage} disabled={loading} />
+          {imageAfterUri ? (
+            <ExpoImage source={{ uri: imageAfterUri }} style={styles.preview} />
+          ) : (
+            <ThemedText style={styles.empty}>No photo selected.</ThemedText>
+          )}
+          <EcoButton title="Clean Report" onPress={cleanReport} disabled={!imageAfterUri || loading} style={{ marginTop: 12 }} />
+        </EcoCard>
+      </ScrollView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  content: { padding: 16, paddingBottom: 28, gap: 14 },
+  header: { gap: 6, marginBottom: 2 },
+  title: { fontWeight: '800' },
+  subtitle: { opacity: 0.85, fontSize: 14, lineHeight: 20 },
+  sectionTitle: { fontWeight: '800', fontSize: 16, marginBottom: 10 },
+  preview: {
+    width: '100%',
+    height: 180,
+    marginTop: 14,
+    borderRadius: 14,
+  },
+  empty: { opacity: 0.7, marginTop: 12 },
+  spacer: { height: 2 },
+});
+</file>
+
+<file path="app/(tabs)/friends.tsx">
+import React, { useEffect, useMemo, useState } from 'react';
+import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { EcoButton } from '@/components/ui/eco-button';
+import { EcoCard } from '@/components/ui/eco-card';
+import { EcoTextInput } from '@/components/ui/eco-text-input';
+import { ApiService } from '@/services/api_service';
+import type { Friend } from '@/models/friend';
+
+export default function FriendsTab() {
+  const apiService = useMemo(() => new ApiService(), []);
+
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [nickname, setNickname] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiService
+      .getFriends('fake-token')
+      .then(setFriends)
+      .catch((e) => console.log('Failed to load friends', e))
+      .finally(() => setLoading(false));
+  }, [apiService]);
+
+  const addFriend = () => {
+    // Flutter implementation is a stub.
+    console.log(`Friend added: ${nickname}`);
+    setNickname('');
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <ThemedText type="title" style={styles.title}>
+            Friends
+          </ThemedText>
+          <ThemedText style={styles.subtitle}>Track eco reports from people you trust.</ThemedText>
+        </View>
+
+        <EcoCard>
+          <ThemedText style={styles.sectionTitle}>Add friend</ThemedText>
+          <EcoTextInput
+            label="Friend Nickname"
+            value={nickname}
+            onChangeText={setNickname}
+            placeholder="Azizali"
+          />
+          <EcoButton title="Add Friend" onPress={addFriend} disabled={!nickname.trim() || loading} />
+        </EcoCard>
+
+        <View style={styles.spacer} />
+
+        <ThemedText style={styles.sectionTitle}>Your list</ThemedText>
+
+        {loading ? (
+          <ThemedText style={styles.empty}>Loading…</ThemedText>
+        ) : friends.length === 0 ? (
+          <ThemedText style={styles.empty}>No friends yet.</ThemedText>
+        ) : (
+          <FlatList
+            data={friends}
+            keyExtractor={(f) => String(f.id)}
+            scrollEnabled={false}
+            renderItem={({ item }) => (
+              <View style={styles.friendRow}>
+                <View style={styles.avatar} />
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={styles.friendName}>{item.nickname}</ThemedText>
+                </View>
+              </View>
+            )}
+          />
+        )}
+      </ScrollView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: 'transparent' },
+  content: { padding: 16, paddingBottom: 28, gap: 14 },
+  header: { gap: 6 },
+  title: { fontWeight: '800' },
+  subtitle: { opacity: 0.85, fontSize: 14, lineHeight: 20 },
+  sectionTitle: { fontWeight: '800', fontSize: 16, marginBottom: 10 },
+  spacer: { height: 2 },
+  empty: { opacity: 0.7 },
+  friendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    gap: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0,0,0,0.08)',
+  },
+  avatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 999,
+    backgroundColor: 'rgba(25,195,125,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(25,195,125,0.25)',
+  },
+  friendName: { fontWeight: '800' },
+});
+</file>
+
+<file path="app/(tabs)/index.tsx">
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { EcoCard } from '@/components/ui/eco-card';
+import { MapWidget } from '@/components/map/MapWidget';
+import { ECOHUNT } from '@/constants/ecohunt';
+
+export default function HomeScreen() {
+  const router = useRouter();
+
+  return (
+    <ThemedView style={styles.container}>
+      <View style={styles.map}>
+        <MapWidget />
+
+        <View style={styles.topOverlay}>
+          <ThemedText type="title" style={styles.title}>
+            EcoMap
+          </ThemedText>
+          <ThemedText style={styles.subtitle}>Friend reports and eco-zone signals.</ThemedText>
+        </View>
+
+        <View style={styles.fabRow}>
+          <EcoCard style={styles.legendCard}>
+            <View style={styles.legendRow}>
+              <View style={[styles.dot, { backgroundColor: ECOHUNT.severity.green }]} />
+              <ThemedText style={styles.legendText}>Clean</ThemedText>
+              <View style={[styles.dot, { backgroundColor: ECOHUNT.severity.yellow }]} />
+              <ThemedText style={styles.legendText}>Watch</ThemedText>
+              <View style={[styles.dot, { backgroundColor: ECOHUNT.severity.red }]} />
+              <ThemedText style={styles.legendText}>Hazard</ThemedText>
+            </View>
+          </EcoCard>
+
+          <Pressable style={styles.reportButton} onPress={() => router.push('/explore')}>
+            <IconSymbol name="exclamationmark.triangle.fill" size={22} color="#07110B" />
+          </Pressable>
+        </View>
+      </View>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  map: {
+    flex: 1,
+  },
+  topOverlay: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    top: 18,
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.28)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+  title: {
+    color: '#fff',
+  },
+  subtitle: {
+    marginTop: 6,
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 13,
+  },
+  fabRow: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 16,
+    gap: 12,
+  },
+  legendCard: {
+    padding: 12,
+    backgroundColor: 'rgba(0,0,0,0.22)',
+    borderColor: 'rgba(255,255,255,0.12)',
+  },
+  legendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 999,
+  },
+  legendText: {
+    color: 'rgba(255,255,255,0.92)',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  reportButton: {
+    alignSelf: 'flex-end',
+    width: 56,
+    height: 56,
+    borderRadius: 999,
+    backgroundColor: ECOHUNT.severity.red,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+  },
+});
+</file>
+
+<file path="app/(tabs)/leaderboard.tsx">
+import React, { useEffect, useMemo, useState } from 'react';
+import { FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { EcoCard } from '@/components/ui/eco-card';
+import type { LeaderboardEntry } from '@/models/leaderboard_entry';
+import { ApiService } from '@/services/api_service';
+
+type TabKey = 'global' | 'friends';
+
+export default function LeaderboardTab() {
+  const apiService = useMemo(() => new ApiService(), []);
+
+  const [tab, setTab] = useState<TabKey>('global');
+  const [global, setGlobal] = useState<LeaderboardEntry[]>([]);
+  const [friends, setFriends] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      apiService.getGlobalLeaderboard('fake-token'),
+      apiService.getFriendsLeaderboard('fake-token'),
+    ])
+      .then(([g, f]) => {
+        setGlobal(g);
+        setFriends(f);
+      })
+      .catch((e) => console.log('Failed to load leaderboard', e))
+      .finally(() => setLoading(false));
+  }, [apiService]);
+
+  const listData = tab === 'global' ? global : friends;
+
+  return (
+    <ThemedView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <ThemedText type="title" style={styles.title}>
+            Leaderboard
+          </ThemedText>
+          <ThemedText style={styles.subtitle}>Top eco guardians by points.</ThemedText>
+        </View>
+
+        <EcoCard style={styles.segmentCard}>
+          <View style={styles.segment}>
+            <Pressable style={[styles.segmentItem, tab === 'global' && styles.segmentItemActive]} onPress={() => setTab('global')}>
+              <ThemedText style={[styles.segmentText, tab === 'global' && styles.segmentTextActive]}>Global</ThemedText>
+            </Pressable>
+            <Pressable style={[styles.segmentItem, tab === 'friends' && styles.segmentItemActive]} onPress={() => setTab('friends')}>
+              <ThemedText style={[styles.segmentText, tab === 'friends' && styles.segmentTextActive]}>Friends</ThemedText>
+            </Pressable>
+          </View>
+        </EcoCard>
+
+        {loading ? (
+          <ThemedText style={styles.empty}>Loading…</ThemedText>
+        ) : listData.length === 0 ? (
+          <ThemedText style={styles.empty}>Nothing here yet.</ThemedText>
+        ) : (
+          <EcoCard style={{ padding: 0 }}>
+            <FlatList
+              data={listData}
+              keyExtractor={(_, i) => String(i)}
+              scrollEnabled={false}
+              renderItem={({ item, index }) => (
+                <View style={styles.row}>
+                  <ThemedText style={styles.rank}>{index + 1}</ThemedText>
+                  <View style={styles.rowMid}>
+                    <ThemedText style={styles.name}>{item.nickname}</ThemedText>
+                  </View>
+                  <ThemedText style={styles.points}>{item.points}</ThemedText>
+                </View>
+              )}
+            />
+          </EcoCard>
+        )}
+      </ScrollView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  content: { padding: 16, paddingBottom: 28, gap: 14 },
+  header: { gap: 6 },
+  title: { fontWeight: '800' },
+  subtitle: { opacity: 0.85, fontSize: 14, lineHeight: 20 },
+
+  segmentCard: { padding: 10 },
+  segment: { flexDirection: 'row', gap: 10 },
+  segmentItem: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentItemActive: {
+    backgroundColor: 'rgba(25,195,125,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(25,195,125,0.35)',
+  },
+  segmentText: { fontWeight: '800', opacity: 0.8 },
+  segmentTextActive: { opacity: 1 },
+
+  row: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0,0,0,0.08)',
+  },
+  rank: { width: 24, fontWeight: '800', opacity: 0.8 },
+  rowMid: { flex: 1 },
+  name: { fontWeight: '800' },
+  points: { fontWeight: '900' },
+  empty: { opacity: 0.7, marginTop: 10 },
+});
+</file>
+
+<file path="app/(tabs)/profile.tsx">
+import React, { useEffect, useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, Switch, View } from 'react-native';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { ApiService } from '@/services/api_service';
+import type { User } from '@/models/user';
+import { EcoButton } from '@/components/ui/eco-button';
+import { EcoCard } from '@/components/ui/eco-card';
+import { EcoTextInput } from '@/components/ui/eco-text-input';
+
+export default function ProfileTab() {
+  const apiService = useMemo(() => new ApiService(), []);
+
+  const [user, setUser] = useState<User | null>(null);
+
+  const [nickname, setNickname] = useState('');
+  const [email, setEmail] = useState('');
+  const [cameraPermission, setCameraPermission] = useState(false);
+  const [geoPermission, setGeoPermission] = useState(false);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiService
+      .getMe('fake-token')
+      .then((u) => {
+        setUser(u);
+        setNickname(u.nickname);
+        setEmail(u.email);
+        setCameraPermission(u.cameraPermission);
+        setGeoPermission(u.geoPermission);
+      })
+      .catch((e) => console.log('Failed to load profile', e))
+      .finally(() => setLoading(false));
+  }, [apiService]);
+
+  const updateProfile = () => {
+    // Flutter version is a stub.
+    console.log('Профиль обновлен');
+  };
+
+  const updatePermissions = () => {
+    // Flutter version is a stub.
+    console.log('Разрешения обновлены');
+  };
+
+  if (loading) {
+    return (
+      <ThemedView style={styles.container}>
+        <ThemedText style={styles.loading}>Loading…</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  return (
+    <ThemedView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <ThemedText type="title" style={styles.title}>
+            Profile
+          </ThemedText>
+          <ThemedText style={styles.subtitle}>Manage your eco settings and permissions.</ThemedText>
+        </View>
+
+        <EcoCard>
+          <View style={styles.pointsRow}>
+            <ThemedText style={styles.pointsLabel}>Points</ThemedText>
+            <ThemedText style={styles.pointsValue}>{user?.points ?? 0}</ThemedText>
+          </View>
+        </EcoCard>
+
+        <EcoCard>
+          <ThemedText style={styles.sectionTitle}>Account</ThemedText>
+          <EcoTextInput label="Nickname" value={nickname} onChangeText={setNickname} />
+          <EcoTextInput label="Email" value={email} onChangeText={setEmail} />
+        </EcoCard>
+
+        <EcoCard>
+          <ThemedText style={styles.sectionTitle}>Permissions</ThemedText>
+
+          <View style={styles.toggleRow}>
+            <ThemedText style={styles.toggleLabel}>Camera Permission</ThemedText>
+            <Switch value={cameraPermission} onValueChange={setCameraPermission} />
+          </View>
+
+          <View style={styles.toggleRow}>
+            <ThemedText style={styles.toggleLabel}>Geo Permission</ThemedText>
+            <Switch value={geoPermission} onValueChange={setGeoPermission} />
+          </View>
+
+          <EcoButton title="Update Profile" onPress={updateProfile} style={{ marginTop: 12 }} />
+          <EcoButton title="Update Permissions" onPress={updatePermissions} variant="secondary" style={{ marginTop: 10 }} />
+        </EcoCard>
+      </ScrollView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  content: { padding: 16, paddingBottom: 28, gap: 14 },
+  header: { gap: 6 },
+  title: { fontWeight: '800' },
+  subtitle: { opacity: 0.85, fontSize: 14, lineHeight: 20 },
+  loading: { padding: 16, opacity: 0.7 },
+
+  sectionTitle: { fontWeight: '800', fontSize: 16, marginBottom: 12 },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  toggleLabel: { fontWeight: '800' },
+
+  pointsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  pointsLabel: { opacity: 0.7, fontWeight: '800' },
+  pointsValue: { fontSize: 22, fontWeight: '900' },
+});
+</file>
+
+<file path="app/_layout.tsx">
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import 'react-native-reanimated';
+
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
+export const unstable_settings = {
+  anchor: '(tabs)',
+};
+
+export default function RootLayout() {
+  const colorScheme = useColorScheme();
+
+  return (
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack initialRouteName="login">
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="register" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+      </Stack>
+      <StatusBar style="auto" />
+    </ThemeProvider>
+  );
+}
+</file>
+
+<file path="app/login.tsx">
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { EcoButton } from '@/components/ui/eco-button';
+import { EcoTextInput } from '@/components/ui/eco-text-input';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AuthService } from '@/services/auth_service';
+
+export default function LoginScreen() {
+  const router = useRouter();
+  const authService = new AuthService();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    if (!email.trim() || !password.trim() || loading) return;
+    setLoading(true);
+    try {
+      const res = await authService.login(email, password);
+      if (res?.access_token) {
+        router.replace('/');
+      } else {
+        // Flutter version prints an error only.
+        console.log('Ошибка входа');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })}>
+        <View style={styles.header}>
+          <View style={styles.brandRow}>
+            <IconSymbol name="leaf.fill" size={28} color={stylesIconColor.container} />
+            <ThemedText type="title" style={styles.brandText}>
+              EcoHunt
+            </ThemedText>
+          </View>
+          <ThemedText style={styles.subtitle}>Report and protect the eco-zone map.</ThemedText>
+        </View>
+
+        <View style={styles.form}>
+          <EcoTextInput
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            placeholder="you@example.com"
+            style={styles.input}
+          />
+          <EcoTextInput
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            placeholder="••••••••"
+            secureTextEntry
+          />
+
+          <EcoButton title={loading ? 'Logging in...' : 'Login'} onPress={submit} disabled={loading} />
+
+          <Pressable onPress={() => router.push('/register')} style={styles.linkRow}>
+            <ThemedText style={styles.linkText}>New here? </ThemedText>
+            <ThemedText type="link">Create account</ThemedText>
+          </Pressable>
+
+          <ThemedText style={styles.hint}>Tip: backend expects a valid access_token response.</ThemedText>
+        </View>
+      </KeyboardAvoidingView>
+    </ThemedView>
+  );
+}
+
+const stylesIconColor = {
+  container: '#19C37D',
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    alignItems: 'stretch',
+    justifyContent: 'center',
+    gap: 18,
+  },
+  header: {
+    gap: 10,
+    marginBottom: 8,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  brandText: {
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
+  subtitle: {
+    opacity: 0.8,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  form: {
+    gap: 14,
+  },
+  input: {},
+  hint: {
+    opacity: 0.6,
+    marginTop: 6,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  linkRow: {
+    marginTop: 4,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  linkText: {
+    opacity: 0.75,
+  },
+});
+</file>
+
+<file path="app/modal.tsx">
+import { Link } from 'expo-router';
+import { StyleSheet } from 'react-native';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+
+export default function ModalScreen() {
+  return (
+    <ThemedView style={styles.container}>
+      <ThemedText type="title">This is a modal</ThemedText>
+      <Link href="/" dismissTo style={styles.link}>
+        <ThemedText type="link">Go to home screen</ThemedText>
+      </Link>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  link: {
+    marginTop: 15,
+    paddingVertical: 15,
+  },
+});
+</file>
+
+<file path="app/register.tsx">
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { EcoButton } from '@/components/ui/eco-button';
+import { EcoTextInput } from '@/components/ui/eco-text-input';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AuthService } from '@/services/auth_service';
+
+export default function RegisterScreen() {
+  const router = useRouter();
+  const authService = new AuthService();
+
+  const [nickname, setNickname] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    if (!nickname.trim() || !email.trim() || !password.trim() || loading) return;
+    setLoading(true);
+    try {
+      const res = await authService.register(nickname, email, password);
+      if (res?.id) {
+        router.replace('/login');
+      } else {
+        console.log('Ошибка регистрации');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <KeyboardAvoidingView behavior={Platform.select({ ios: 'padding', android: undefined })}>
+        <View style={styles.header}>
+          <View style={styles.brandRow}>
+            <IconSymbol name="leaf.fill" size={28} color="#19C37D" />
+            <ThemedText type="title" style={styles.brandText}>
+              Create account
+            </ThemedText>
+          </View>
+          <ThemedText style={styles.subtitle}>Join EcoHunt to track impact and points.</ThemedText>
+        </View>
+
+        <View style={styles.form}>
+          <EcoTextInput label="Nickname" value={nickname} onChangeText={setNickname} placeholder="Azizali" />
+          <EcoTextInput label="Email" value={email} onChangeText={setEmail} placeholder="you@example.com" />
+          <EcoTextInput
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            placeholder="••••••••"
+            secureTextEntry
+          />
+
+          <EcoButton title={loading ? 'Creating...' : 'Register'} onPress={submit} disabled={loading} />
+
+          <Pressable onPress={() => router.replace('/login')} style={styles.linkRow}>
+            <ThemedText style={styles.linkText}>Already have an account? </ThemedText>
+            <ThemedText type="link">Login</ThemedText>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    alignItems: 'stretch',
+    justifyContent: 'center',
+    gap: 18,
+  },
+  header: {
+    gap: 10,
+    marginBottom: 8,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  brandText: {
+    fontWeight: '800',
+    letterSpacing: 0.2,
+    fontSize: 26,
+    lineHeight: 30,
+  },
+  subtitle: {
+    opacity: 0.8,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  form: {
+    gap: 14,
+  },
+  linkRow: {
+    marginTop: 6,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  linkText: {
+    opacity: 0.75,
+  },
+});
+</file>
+
+<file path="components/map/MapWidget.tsx">
+import React, { useMemo } from 'react';
+import MapView, { Marker, type Region } from 'react-native-maps';
+import { ECOHUNT } from '@/constants/ecohunt';
+
+export function MapWidget() {
+  const initialRegion: Region = useMemo(
+    () => ({
+      latitude: ECOHUNT.mapInitialLat,
+      longitude: ECOHUNT.mapInitialLng,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    }),
+    [],
+  );
+
+  const markers = useMemo(
+    () => [
+      {
+        key: 'friend_1',
+        coordinate: { latitude: ECOHUNT.mapInitialLat, longitude: ECOHUNT.mapInitialLng },
+        pinColor: ECOHUNT.severity.green,
+      },
+      {
+        key: 'report_1',
+        coordinate: {
+          latitude: ECOHUNT.mapInitialLat + 0.001,
+          longitude: ECOHUNT.mapInitialLng + 0.001,
+        },
+        pinColor: ECOHUNT.severity.red,
+      },
+    ],
+    [],
+  );
+
+  return (
+    <MapView
+      style={{ flex: 1 }}
+      initialRegion={initialRegion}
+      showsCompass={false}
+      showsScale={false}
+      >
+      {markers.map((m) => (
+        <Marker
+          key={m.key}
+          coordinate={m.coordinate}
+          pinColor={m.pinColor}
+          title={m.key === 'friend_1' ? 'Друг: Azizali' : 'Грязная зона'}
+        />
+      ))}
+    </MapView>
+  );
+}
+</file>
+
+<file path="components/ui/collapsible.tsx">
+import { PropsWithChildren, useState } from 'react';
+import { StyleSheet, TouchableOpacity } from 'react-native';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
+export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const theme = useColorScheme() ?? 'light';
+
+  return (
+    <ThemedView>
+      <TouchableOpacity
+        style={styles.heading}
+        onPress={() => setIsOpen((value) => !value)}
+        activeOpacity={0.8}>
+        <IconSymbol
+          name="chevron.right"
+          size={18}
+          weight="medium"
+          color={theme === 'light' ? Colors.light.icon : Colors.dark.icon}
+          style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }}
+        />
+
+        <ThemedText type="defaultSemiBold">{title}</ThemedText>
+      </TouchableOpacity>
+      {isOpen && <ThemedView style={styles.content}>{children}</ThemedView>}
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  heading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  content: {
+    marginTop: 6,
+    marginLeft: 24,
+  },
+});
+</file>
+
+<file path="components/ui/eco-button.tsx">
+import React from 'react';
+import { Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native';
+
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
+type Props = {
+  title: string;
+  onPress: () => void;
+  variant?: 'primary' | 'secondary';
+  style?: StyleProp<ViewStyle> | null;
+  disabled?: boolean;
+};
+
+export function EcoButton({ title, onPress, variant = 'primary', style, disabled }: Props) {
+  const scheme = useColorScheme() ?? 'light';
+  const tint = Colors[scheme].tint;
+  const backgroundColor = variant === 'primary' ? tint : 'transparent';
+  const borderColor = variant === 'secondary' ? tint : 'transparent';
+  const textColor = variant === 'primary' ? '#07110B' : tint;
+
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      style={({ pressed }) => {
+        // Some RN builds crash if the style resolves to `null` internally.
+        // Always return a concrete style object.
+        return StyleSheet.flatten([
+          styles.buttonBase,
+          pressed ? styles.pressed : undefined,
+          {
+            backgroundColor,
+            borderColor,
+            opacity: disabled ? 0.6 : 1,
+          } satisfies ViewStyle,
+          (style ?? undefined) as StyleProp<ViewStyle>,
+        ]);
+      }}>
+      <Text style={[styles.text, { color: textColor }]}>{title}</Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  buttonBase: {
+    height: 48,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  pressed: {
+    transform: [{ scale: 0.99 }],
+  },
+  text: {
+    fontWeight: '700',
+    fontSize: 16,
+  },
+});
+</file>
+
+<file path="components/ui/eco-card.tsx">
+import React from 'react';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
+type Props = {
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function EcoCard({ children, style }: Props) {
+  const scheme = useColorScheme() ?? 'light';
+  const backgroundColor = Colors[scheme].background === '#fff' ? '#fff' : 'rgba(255,255,255,0.06)';
+
+  return (
+    <View style={[styles.card, { backgroundColor }, style]}>
+      {children}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 18,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.04)',
+  },
+});
+</file>
+
+<file path="components/ui/eco-text-input.tsx">
+import React from 'react';
+import { StyleProp, StyleSheet, Text, TextInput, View, ViewStyle } from 'react-native';
+
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
+type Props = {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+  secureTextEntry?: boolean;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function EcoTextInput({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  secureTextEntry,
+  style,
+}: Props) {
+  const scheme = useColorScheme() ?? 'light';
+  const textColor = Colors[scheme].text;
+  const backgroundColor = Colors[scheme].background === '#fff' ? '#F2F6F3' : 'rgba(255,255,255,0.06)';
+  const borderColor = Colors[scheme].icon;
+
+  return (
+    <View style={[styles.wrapper, style]}>
+      <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={Colors[scheme].icon}
+        secureTextEntry={secureTextEntry}
+        style={[
+          styles.input,
+          {
+            color: textColor,
+            backgroundColor,
+            borderColor,
+          },
+        ]}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  wrapper: {
+    gap: 8,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  input: {
+    height: 48,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+});
+</file>
+
+<file path="components/ui/icon-symbol.ios.tsx">
+import { SymbolView, SymbolViewProps, SymbolWeight } from 'expo-symbols';
+import { StyleProp, ViewStyle } from 'react-native';
+
+export function IconSymbol({
+  name,
+  size = 24,
+  color,
+  style,
+  weight = 'regular',
+}: {
+  name: SymbolViewProps['name'];
+  size?: number;
+  color: string;
+  style?: StyleProp<ViewStyle>;
+  weight?: SymbolWeight;
+}) {
+  return (
+    <SymbolView
+      weight={weight}
+      tintColor={color}
+      resizeMode="scaleAspectFit"
+      name={name}
+      style={[
+        {
+          width: size,
+          height: size,
+        },
+        style,
+      ]}
+    />
+  );
+}
+</file>
+
+<file path="components/ui/icon-symbol.tsx">
+// Fallback for using MaterialIcons on Android and web.
+
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
+import { ComponentProps } from 'react';
+import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
+
+type IconMapping = Partial<
+  Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>
+>;
+
+/**
+ * Add your SF Symbols to Material Icons mappings here.
+ * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
+ * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
+ */
+const MAPPING = {
+  'house.fill': 'home',
+  'paperplane.fill': 'send',
+  'chevron.left.forwardslash.chevron.right': 'code',
+  'chevron.right': 'chevron-right',
+  'leaf.fill': 'eco',
+  'person.fill': 'person',
+  'trophy.fill': 'emoji-events',
+  'exclamationmark.triangle.fill': 'warning',
+} satisfies IconMapping;
+
+type IconSymbolName = keyof typeof MAPPING;
+
+/**
+ * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
+ * This ensures a consistent look across platforms, and optimal resource usage.
+ * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
+ */
+export function IconSymbol({
+  name,
+  size = 24,
+  color,
+  style,
+}: {
+  name: IconSymbolName;
+  size?: number;
+  color: string | OpaqueColorValue;
+  style?: StyleProp<TextStyle>;
+  weight?: SymbolWeight;
+}) {
+  const materialName = MAPPING[name] ?? 'home';
+  return <MaterialIcons color={color} size={size} name={materialName} style={style} />;
+}
+</file>
+
+<file path="components/external-link.tsx">
+import { Href, Link } from 'expo-router';
+import { openBrowserAsync, WebBrowserPresentationStyle } from 'expo-web-browser';
+import { type ComponentProps } from 'react';
+
+type Props = Omit<ComponentProps<typeof Link>, 'href'> & { href: Href & string };
+
+export function ExternalLink({ href, ...rest }: Props) {
+  return (
+    <Link
+      target="_blank"
+      {...rest}
+      href={href}
+      onPress={async (event) => {
+        if (process.env.EXPO_OS !== 'web') {
+          // Prevent the default behavior of linking to the default browser on native.
+          event.preventDefault();
+          // Open the link in an in-app browser.
+          await openBrowserAsync(href, {
+            presentationStyle: WebBrowserPresentationStyle.AUTOMATIC,
+          });
+        }
+      }}
+    />
+  );
+}
+</file>
+
+<file path="components/haptic-tab.tsx">
+import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
+import { PlatformPressable } from '@react-navigation/elements';
+import * as Haptics from 'expo-haptics';
+
+export function HapticTab(props: BottomTabBarButtonProps) {
+  return (
+    <PlatformPressable
+      {...props}
+      onPressIn={(ev) => {
+        if (process.env.EXPO_OS === 'ios') {
+          // Add a soft haptic feedback when pressing down on the tabs.
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
+        props.onPressIn?.(ev);
+      }}
+    />
+  );
+}
+</file>
+
+<file path="components/hello-wave.tsx">
+import Animated from 'react-native-reanimated';
+
+export function HelloWave() {
+  return (
+    <Animated.Text
+      style={{
+        fontSize: 28,
+        lineHeight: 32,
+        marginTop: -6,
+        animationName: {
+          '50%': { transform: [{ rotate: '25deg' }] },
+        },
+        animationIterationCount: 4,
+        animationDuration: '300ms',
+      }}>
+      👋
+    </Animated.Text>
+  );
+}
+</file>
+
+<file path="components/parallax-scroll-view.tsx">
+import type { PropsWithChildren, ReactElement } from 'react';
+import { StyleSheet } from 'react-native';
+import Animated, {
+  interpolate,
+  useAnimatedRef,
+  useAnimatedStyle,
+  useScrollOffset,
+} from 'react-native-reanimated';
+
+import { ThemedView } from '@/components/themed-view';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useThemeColor } from '@/hooks/use-theme-color';
+
+const HEADER_HEIGHT = 250;
+
+type Props = PropsWithChildren<{
+  headerImage: ReactElement;
+  headerBackgroundColor: { dark: string; light: string };
+}>;
+
+export default function ParallaxScrollView({
+  children,
+  headerImage,
+  headerBackgroundColor,
+}: Props) {
+  const backgroundColor = useThemeColor({}, 'background');
+  const colorScheme = useColorScheme() ?? 'light';
+  const scrollRef = useAnimatedRef<Animated.ScrollView>();
+  const scrollOffset = useScrollOffset(scrollRef);
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: interpolate(
+            scrollOffset.value,
+            [-HEADER_HEIGHT, 0, HEADER_HEIGHT],
+            [-HEADER_HEIGHT / 2, 0, HEADER_HEIGHT * 0.75]
+          ),
+        },
+        {
+          scale: interpolate(scrollOffset.value, [-HEADER_HEIGHT, 0, HEADER_HEIGHT], [2, 1, 1]),
+        },
+      ],
+    };
+  });
+
+  return (
+    <Animated.ScrollView
+      ref={scrollRef}
+      style={{ backgroundColor, flex: 1 }}
+      scrollEventThrottle={16}>
+      <Animated.View
+        style={[
+          styles.header,
+          { backgroundColor: headerBackgroundColor[colorScheme] },
+          headerAnimatedStyle,
+        ]}>
+        {headerImage}
+      </Animated.View>
+      <ThemedView style={styles.content}>{children}</ThemedView>
+    </Animated.ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    height: HEADER_HEIGHT,
+    overflow: 'hidden',
+  },
+  content: {
+    flex: 1,
+    padding: 32,
+    gap: 16,
+    overflow: 'hidden',
+  },
+});
+</file>
+
+<file path="components/themed-text.tsx">
+import { StyleSheet, Text, type TextProps } from 'react-native';
+
+import { useThemeColor } from '@/hooks/use-theme-color';
+
+export type ThemedTextProps = TextProps & {
+  lightColor?: string;
+  darkColor?: string;
+  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
+};
+
+export function ThemedText({
+  style,
+  lightColor,
+  darkColor,
+  type = 'default',
+  ...rest
+}: ThemedTextProps) {
+  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+
+  return (
+    <Text
+      style={[
+        { color },
+        type === 'default' ? styles.default : undefined,
+        type === 'title' ? styles.title : undefined,
+        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
+        type === 'subtitle' ? styles.subtitle : undefined,
+        type === 'link' ? styles.link : undefined,
+        style,
+      ]}
+      {...rest}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  default: {
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  defaultSemiBold: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: '600',
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    lineHeight: 32,
+  },
+  subtitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  link: {
+    lineHeight: 30,
+    fontSize: 16,
+    color: '#0a7ea4',
+  },
+});
+</file>
+
+<file path="components/themed-view.tsx">
+import { View, type ViewProps } from 'react-native';
+
+import { useThemeColor } from '@/hooks/use-theme-color';
+
+export type ThemedViewProps = ViewProps & {
+  lightColor?: string;
+  darkColor?: string;
+};
+
+export function ThemedView({ style, lightColor, darkColor, ...otherProps }: ThemedViewProps) {
+  const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
+
+  return <View style={[{ backgroundColor }, style]} {...otherProps} />;
+}
+</file>
+
+<file path="constants/ecohunt.ts">
+import Constants from 'expo-constants';
+
+function inferDevHost(): string | null {
+  // Expo Go usually provides something like "192.168.1.10:8081"
+  const hostUri =
+    (Constants.expoConfig as any)?.hostUri ??
+    (Constants as any)?.expoConfig?.hostUri ??
+    (Constants as any)?.manifest?.debuggerHost ??
+    (Constants as any)?.manifest2?.extra?.expoGo?.debuggerHost ??
+    (Constants as any)?.manifest2?.extra?.expoClient?.hostUri;
+
+  if (!hostUri || typeof hostUri !== 'string') return null;
+  return hostUri.split(':')[0] ?? null;
+}
+
+export function getApiBaseUrl(): string {
+  // Allows explicit override without touching code.
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (envUrl && typeof envUrl === 'string') return envUrl;
+
+  const host = inferDevHost();
+  if (host) return `http://${host}:8000`;
+
+  // Fallback (works only on iOS simulator / same device hosting backend).
+  return 'http://127.0.0.1:8000';
+}
+
+export const ECOHUNT = {
+  mapInitialLat: 43.23,
+  mapInitialLng: 76.92,
+
+  // Marker colors (Flutter used green/yellow/red zones).
+  severity: {
+    green: '#2ECC71',
+    yellow: '#F1C40F',
+    red: '#E74C3C',
+  },
+};
+</file>
+
+<file path="constants/theme.ts">
+/**
+ * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
+ * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ */
+
+import { Platform } from 'react-native';
+
+const tintColorLight = '#19C37D';
+const tintColorDark = '#19C37D';
+
+export const Colors = {
+  light: {
+    text: '#0B2B18',
+    background: '#F4FFF7',
+    tint: tintColorLight,
+    icon: '#4B6459',
+    tabIconDefault: '#4B6459',
+    tabIconSelected: tintColorLight,
+  },
+  dark: {
+    text: '#EAF6EE',
+    background: '#07110B',
+    tint: tintColorDark,
+    icon: '#7EA190',
+    tabIconDefault: '#7EA190',
+    tabIconSelected: tintColorDark,
+  },
+};
+
+export const Fonts = Platform.select({
+  ios: {
+    /** iOS `UIFontDescriptorSystemDesignDefault` */
+    sans: 'system-ui',
+    /** iOS `UIFontDescriptorSystemDesignSerif` */
+    serif: 'ui-serif',
+    /** iOS `UIFontDescriptorSystemDesignRounded` */
+    rounded: 'ui-rounded',
+    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
+    mono: 'ui-monospace',
+  },
+  default: {
+    sans: 'normal',
+    serif: 'serif',
+    rounded: 'normal',
+    mono: 'monospace',
+  },
+  web: {
+    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    serif: "Georgia, 'Times New Roman', serif",
+    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
+    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+  },
+});
+</file>
+
+<file path="hooks/use-color-scheme.ts">
+export { useColorScheme } from 'react-native';
+</file>
+
+<file path="hooks/use-color-scheme.web.ts">
+import { useEffect, useState } from 'react';
+import { useColorScheme as useRNColorScheme } from 'react-native';
+
+/**
+ * To support static rendering, this value needs to be re-calculated on the client side for web
+ */
+export function useColorScheme() {
+  const [hasHydrated, setHasHydrated] = useState(false);
+
+  useEffect(() => {
+    setHasHydrated(true);
+  }, []);
+
+  const colorScheme = useRNColorScheme();
+
+  if (hasHydrated) {
+    return colorScheme;
+  }
+
+  return 'light';
+}
+</file>
+
+<file path="hooks/use-theme-color.ts">
+/**
+ * Learn more about light and dark modes:
+ * https://docs.expo.dev/guides/color-schemes/
+ */
+
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+
+export function useThemeColor(
+  props: { light?: string; dark?: string },
+  colorName: keyof typeof Colors.light & keyof typeof Colors.dark
+) {
+  const theme = useColorScheme() ?? 'light';
+  const colorFromProps = props[theme];
+
+  if (colorFromProps) {
+    return colorFromProps;
+  } else {
+    return Colors[theme][colorName];
+  }
+}
+</file>
+
+<file path="models/friend.ts">
+export type Friend = {
+  id: number;
+  nickname: string;
+};
+
+export function friendFromJson(json: any): Friend {
+  return {
+    id: json.id,
+    nickname: json.nickname,
+  };
+}
+</file>
+
+<file path="models/leaderboard_entry.ts">
+export type LeaderboardEntry = {
+  nickname: string;
+  points: number;
+};
+
+export function leaderboardEntryFromJson(json: any): LeaderboardEntry {
+  return {
+    nickname: json.nickname,
+    points: json.points,
+  };
+}
+</file>
+
+<file path="models/report.ts">
+export type Report = {
+  id: number;
+  lat: number;
+  lng: number;
+  severity: 'green' | 'yellow' | 'red' | string;
+  reportsCount: number;
+};
+
+export function reportFromJson(json: any): Report {
+  return {
+    id: json.id,
+    lat: json.lat,
+    lng: json.lng,
+    severity: json.severity,
+    reportsCount: json.reports_count,
+  };
+}
+</file>
+
+<file path="models/user.ts">
+export type User = {
+  id: number;
+  nickname: string;
+  email: string;
+  cameraPermission: boolean;
+  geoPermission: boolean;
+  points: number;
+};
+
+export function userFromJson(json: any): User {
+  return {
+    id: json.id,
+    nickname: json.nickname,
+    email: json.email,
+    cameraPermission: json.camera_permission,
+    geoPermission: json.geo_permission,
+    points: json.points,
+  };
+}
+</file>
+
+<file path="scripts/reset-project.js">
+#!/usr/bin/env node
+
+/**
+ * This script is used to reset the project to a blank state.
+ * It deletes or moves the /app, /components, /hooks, /scripts, and /constants directories to /app-example based on user input and creates a new /app directory with an index.tsx and _layout.tsx file.
+ * You can remove the `reset-project` script from package.json and safely delete this file after running it.
+ */
+
+const fs = require("fs");
+const path = require("path");
+const readline = require("readline");
+
+const root = process.cwd();
+const oldDirs = ["app", "components", "hooks", "constants", "scripts"];
+const exampleDir = "app-example";
+const newAppDir = "app";
+const exampleDirPath = path.join(root, exampleDir);
+
+const indexContent = `import { Text, View } from "react-native";
+
+export default function Index() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Text>Edit app/index.tsx to edit this screen.</Text>
+    </View>
+  );
+}
+`;
+
+const layoutContent = `import { Stack } from "expo-router";
+
+export default function RootLayout() {
+  return <Stack />;
+}
+`;
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+const moveDirectories = async (userInput) => {
+  try {
+    if (userInput === "y") {
+      // Create the app-example directory
+      await fs.promises.mkdir(exampleDirPath, { recursive: true });
+      console.log(`📁 /${exampleDir} directory created.`);
+    }
+
+    // Move old directories to new app-example directory or delete them
+    for (const dir of oldDirs) {
+      const oldDirPath = path.join(root, dir);
+      if (fs.existsSync(oldDirPath)) {
+        if (userInput === "y") {
+          const newDirPath = path.join(root, exampleDir, dir);
+          await fs.promises.rename(oldDirPath, newDirPath);
+          console.log(`➡️ /${dir} moved to /${exampleDir}/${dir}.`);
+        } else {
+          await fs.promises.rm(oldDirPath, { recursive: true, force: true });
+          console.log(`❌ /${dir} deleted.`);
+        }
+      } else {
+        console.log(`➡️ /${dir} does not exist, skipping.`);
+      }
+    }
+
+    // Create new /app directory
+    const newAppDirPath = path.join(root, newAppDir);
+    await fs.promises.mkdir(newAppDirPath, { recursive: true });
+    console.log("\n📁 New /app directory created.");
+
+    // Create index.tsx
+    const indexPath = path.join(newAppDirPath, "index.tsx");
+    await fs.promises.writeFile(indexPath, indexContent);
+    console.log("📄 app/index.tsx created.");
+
+    // Create _layout.tsx
+    const layoutPath = path.join(newAppDirPath, "_layout.tsx");
+    await fs.promises.writeFile(layoutPath, layoutContent);
+    console.log("📄 app/_layout.tsx created.");
+
+    console.log("\n✅ Project reset complete. Next steps:");
+    console.log(
+      `1. Run \`npx expo start\` to start a development server.\n2. Edit app/index.tsx to edit the main screen.${
+        userInput === "y"
+          ? `\n3. Delete the /${exampleDir} directory when you're done referencing it.`
+          : ""
+      }`
+    );
+  } catch (error) {
+    console.error(`❌ Error during script execution: ${error.message}`);
+  }
+};
+
+rl.question(
+  "Do you want to move existing files to /app-example instead of deleting them? (Y/n): ",
+  (answer) => {
+    const userInput = answer.trim().toLowerCase() || "y";
+    if (userInput === "y" || userInput === "n") {
+      moveDirectories(userInput).finally(() => rl.close());
+    } else {
+      console.log("❌ Invalid input. Please enter 'Y' or 'N'.");
+      rl.close();
+    }
+  }
+);
+</file>
+
+<file path="services/api_service.ts">
+import { getApiBaseUrl } from '@/constants/ecohunt';
+import type { Friend } from '@/models/friend';
+import { friendFromJson } from '@/models/friend';
+import type { LeaderboardEntry } from '@/models/leaderboard_entry';
+import { leaderboardEntryFromJson } from '@/models/leaderboard_entry';
+import type { Report } from '@/models/report';
+import { reportFromJson } from '@/models/report';
+import type { User } from '@/models/user';
+import { userFromJson } from '@/models/user';
+
+export class ApiService {
+  private baseUrl() {
+    return getApiBaseUrl();
+  }
+
+  async getMe(token: string): Promise<User> {
+    const res = await fetch(`${this.baseUrl()}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return userFromJson(await res.json());
+  }
+
+  async getFriends(token: string): Promise<Friend[]> {
+    const res = await fetch(`${this.baseUrl()}/friends`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = (await res.json()) as any[];
+    return data.map(friendFromJson);
+  }
+
+  async getReports(token: string): Promise<Report[]> {
+    const res = await fetch(`${this.baseUrl()}/reports`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = (await res.json()) as any[];
+    return data.map(reportFromJson);
+  }
+
+  async getGlobalLeaderboard(token: string): Promise<LeaderboardEntry[]> {
+    const res = await fetch(`${this.baseUrl()}/leaderboard/global`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = (await res.json()) as any[];
+    return data.map(leaderboardEntryFromJson);
+  }
+
+  async getFriendsLeaderboard(token: string): Promise<LeaderboardEntry[]> {
+    const res = await fetch(`${this.baseUrl()}/leaderboard/friends`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = (await res.json()) as any[];
+    return data.map(leaderboardEntryFromJson);
+  }
+}
+</file>
+
+<file path="services/auth_service.ts">
+import { getApiBaseUrl } from '@/constants/ecohunt';
+
+export class AuthService {
+  private baseUrl() {
+    return getApiBaseUrl();
+  }
+
+  async login(email: string, password: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl()}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+
+    return res.json();
+  }
+
+  async register(
+    nickname: string,
+    email: string,
+    password: string,
+  ): Promise<any> {
+    const res = await fetch(`${this.baseUrl()}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, email, password }),
+    });
+
+    return res.json();
+  }
+}
+</file>
+
+<file path=".gitignore">
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+app-example
+
+# generated native folders
+/ios
+/android
+</file>
+
+<file path="app.json">
+{
+  "expo": {
+    "name": "my-app",
+    "slug": "my-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "backgroundColor": "#000000"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
+</file>
+
+<file path="eslint.config.js">
+// https://docs.expo.dev/guides/using-eslint/
+const { defineConfig } = require('eslint/config');
+const expoConfig = require('eslint-config-expo/flat');
+
+module.exports = defineConfig([
+  expoConfig,
+  {
+    ignores: ['dist/*'],
+  },
+]);
+</file>
+
+<file path="package.json">
+{
+  "name": "my-app",
+  "main": "expo-router/entry",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "expo start",
+    "reset-project": "node ./scripts/reset-project.js",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "lint": "expo lint"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^15.0.3",
+    "@react-navigation/bottom-tabs": "^7.4.0",
+    "@react-navigation/elements": "^2.6.3",
+    "@react-navigation/native": "^7.1.8",
+    "expo": "~54.0.33",
+    "expo-constants": "~18.0.13",
+    "expo-font": "~14.0.11",
+    "expo-haptics": "~15.0.8",
+    "expo-image": "~3.0.11",
+    "expo-image-picker": "~17.0.10",
+    "expo-linking": "~8.0.11",
+    "expo-router": "~6.0.23",
+    "expo-splash-screen": "~31.0.13",
+    "expo-status-bar": "~3.0.9",
+    "expo-symbols": "~1.0.8",
+    "expo-system-ui": "~6.0.9",
+    "expo-web-browser": "~15.0.10",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-gesture-handler": "~2.28.0",
+    "react-native-maps": "1.20.1",
+    "react-native-reanimated": "~4.1.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "react-native-web": "~0.21.0",
+    "react-native-worklets": "0.5.1"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "@types/react-native": "^0.72.8",
+    "eslint": "^9.25.0",
+    "eslint-config-expo": "~10.0.0",
+    "typescript": "~5.9.2"
+  },
+  "private": true
+}
+</file>
+
+<file path="README.md">
+# Welcome to your Expo app 👋
+
+This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+
+## Get started
+
+1. Install dependencies
+
+   ```bash
+   npm install
+   ```
+
+2. Start the app
+
+   ```bash
+   npx expo start
+   ```
+
+In the output, you'll find options to open the app in a
+
+- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+
+You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+
+## Get a fresh project
+
+When you're ready, run:
+
+```bash
+npm run reset-project
+```
+
+This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+
+## Learn more
+
+To learn more about developing your project with Expo, look at the following resources:
+
+- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
+- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+
+## Join the community
+
+Join our community of developers creating universal apps.
+
+- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
+- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+</file>
+
+<file path="tsconfig.json">
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ]
+}
+</file>
+
+</files>

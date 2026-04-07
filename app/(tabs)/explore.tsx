@@ -1,100 +1,135 @@
 import React, { useState } from 'react';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
-import { ScrollView, StyleSheet, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { EcoButton } from '@/components/ui/eco-button';
 import { EcoCard } from '@/components/ui/eco-card';
+import { ApiService } from '@/services/api_service';
+
+import { getApiBaseUrl } from '@/constants/ecohunt';
+console.log('API URL:', getApiBaseUrl());
+
+const apiService = new ApiService();
 
 export default function ReportScreen() {
   const [imageBeforeUri, setImageBeforeUri] = useState<string | null>(null);
   const [imageAfterUri, setImageAfterUri] = useState<string | null>(null);
+  const [activeReportId, setActiveReportId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const pickBeforeImage = async () => {
+
+
+
+  const pickImage = async (setter: (uri: string) => void) => {
     if (loading) return;
-    setLoading(true);
-    try {
-      const perm = await ImagePicker.requestCameraPermissionsAsync();
-      if (!perm.granted) return;
-
-      const res = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.85,
-      });
-
-      if (!res.canceled) {
-        setImageBeforeUri(res.assets[0]?.uri ?? null);
-      }
-    } finally {
-      setLoading(false);
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('Нет доступа к камере');
+      return;
     }
-  };
-
-  const pickAfterImage = async () => {
-    if (loading) return;
-    setLoading(true);
-    try {
-      const perm = await ImagePicker.requestCameraPermissionsAsync();
-      if (!perm.granted) return;
-
-      const res = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.85,
-      });
-
-      if (!res.canceled) {
-        setImageAfterUri(res.assets[0]?.uri ?? null);
-      }
-    } finally {
-      setLoading(false);
+    const res = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.85,
+    });
+    if (!res.canceled) {
+      setter(res.assets[0].uri);
     }
   };
 
   const createReport = async () => {
-    if (!imageBeforeUri) return;
-    console.log(`Report created с фото: ${imageBeforeUri}`);
+    if (!imageBeforeUri || loading) return;
+    setLoading(true);
+    try {
+      const locPerm = await Location.requestForegroundPermissionsAsync();
+      if (!locPerm.granted) {
+        Alert.alert('Нужен доступ к геолокации');
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({});
+      const report = await apiService.createReport(
+        loc.coords.latitude,
+        loc.coords.longitude,
+        imageBeforeUri,
+      );
+      setActiveReportId(report.id);
+      Alert.alert('Репорт создан!', `ID: ${report.id}`);
+    } catch (e) {
+      Alert.alert('Ошибка', 'Не удалось создать репорт');
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const cleanReport = async () => {
-    if (!imageAfterUri) return;
-    console.log(`Report cleaned с фото: ${imageAfterUri}`);
+    if (!imageAfterUri || loading) return;
+    if (!activeReportId) {
+      Alert.alert('Сначала создайте репорт (Before)');
+      return;
+    }
+    setLoading(true);
+    try {
+      const report = await apiService.cleanReport(activeReportId, imageAfterUri);
+      const msg = report.aiCleaned
+  ? `Засчитано! +${report.aiPointsAwarded} очков`
+  : `Изменения незначительные. +${report.aiPointsAwarded ?? 0} очков`;
+      Alert.alert('Результат очистки', msg);
+      setImageBeforeUri(null);
+      setImageAfterUri(null);
+      setActiveReportId(null);
+    } catch (e) {
+      Alert.alert('Ошибка', 'Не удалось отправить очистку');
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <ThemedText type="title" style={styles.title}>
-            Report
-          </ThemedText>
+          <ThemedText type="title" style={styles.title}>Report</ThemedText>
           <ThemedText style={styles.subtitle}>Send before/after photos to mark eco issues.</ThemedText>
         </View>
 
         <EcoCard>
           <ThemedText style={styles.sectionTitle}>Before</ThemedText>
-          <EcoButton title="Pick Before Image" onPress={pickBeforeImage} disabled={loading} />
+          <EcoButton title="Take Before Photo" onPress={() => pickImage(setImageBeforeUri)} disabled={loading} />
           {imageBeforeUri ? (
             <ExpoImage source={{ uri: imageBeforeUri }} style={styles.preview} />
           ) : (
             <ThemedText style={styles.empty}>No photo selected.</ThemedText>
           )}
-          <EcoButton title="Create Report" onPress={createReport} disabled={!imageBeforeUri || loading} style={{ marginTop: 12 }} />
+          <EcoButton
+            title={loading ? 'Sending...' : 'Create Report'}
+            onPress={createReport}
+            disabled={!imageBeforeUri || loading}
+            style={{ marginTop: 12 }}
+          />
         </EcoCard>
-
-        <View style={styles.spacer} />
 
         <EcoCard>
           <ThemedText style={styles.sectionTitle}>After</ThemedText>
-          <EcoButton title="Pick After Image" onPress={pickAfterImage} disabled={loading} />
+          {activeReportId && (
+            <ThemedText style={styles.reportId}>Report #{activeReportId} активен</ThemedText>
+          )}
+          <EcoButton title="Take After Photo" onPress={() => pickImage(setImageAfterUri)} disabled={loading} />
           {imageAfterUri ? (
             <ExpoImage source={{ uri: imageAfterUri }} style={styles.preview} />
           ) : (
             <ThemedText style={styles.empty}>No photo selected.</ThemedText>
           )}
-          <EcoButton title="Clean Report" onPress={cleanReport} disabled={!imageAfterUri || loading} style={{ marginTop: 12 }} />
+          <EcoButton
+            title={loading ? 'Sending...' : 'Clean Report'}
+            onPress={cleanReport}
+            disabled={!imageAfterUri || !activeReportId || loading}
+            style={{ marginTop: 12 }}
+          />
         </EcoCard>
       </ScrollView>
     </ThemedView>
@@ -108,12 +143,7 @@ const styles = StyleSheet.create({
   title: { fontWeight: '800' },
   subtitle: { opacity: 0.85, fontSize: 14, lineHeight: 20 },
   sectionTitle: { fontWeight: '800', fontSize: 16, marginBottom: 10 },
-  preview: {
-    width: '100%',
-    height: 180,
-    marginTop: 14,
-    borderRadius: 14,
-  },
+  preview: { width: '100%', height: 180, marginTop: 14, borderRadius: 14 },
   empty: { opacity: 0.7, marginTop: 12 },
-  spacer: { height: 2 },
+  reportId: { opacity: 0.7, fontSize: 13, marginBottom: 8 },
 });
