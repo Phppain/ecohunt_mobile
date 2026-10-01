@@ -22,11 +22,14 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const res = await authService.login(email, password);
+
+      console.log("RES:", res);
+      
       if (res?.access_token) {
-        router.replace('/');
+        router.replace('/(tabs)');
       } else {
         // Flutter version prints an error only.
-        console.log('Ошибка входа');
+        console.log('Ошибка входа:', res);
       }
     } finally {
       setLoading(false);

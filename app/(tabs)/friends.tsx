@@ -1,110 +1,149 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, ScrollView, StyleSheet, View } from 'react-native';
-
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { EcoButton } from '@/components/ui/eco-button';
-import { EcoCard } from '@/components/ui/eco-card';
-import { EcoTextInput } from '@/components/ui/eco-text-input';
-import { ApiService } from '@/services/api_service';
-import type { Friend } from '@/models/friend';
+import React, { useEffect, useState } from "react";
+import { FlatList, ScrollView, StyleSheet, View } from "react-native";
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { EcoButton } from "@/components/ui/eco-button";
+import { EcoCard } from "@/components/ui/eco-card";
+import { EcoTextInput } from "@/components/ui/eco-text-input";
+import { useAppStore } from "@/stores/app_store";
 
 export default function FriendsTab() {
-  const apiService = useMemo(() => new ApiService(), []);
+    const friends = useAppStore((s) => s.friends);
+    const requests = useAppStore((s) => s.friendRequests);
+    const refreshFriends = useAppStore((s) => s.refreshFriends);
+    const refreshRequests = useAppStore((s) => s.refreshFriendRequests);
+    const sendFriendRequest = useAppStore((s) => s.sendFriendRequest);
+    const accept = useAppStore((s) => s.acceptFriendRequest);
+    const reject = useAppStore((s) => s.rejectFriendRequest);
+    const remove = useAppStore((s) => s.removeFriend);
+    const [nickname, setNickname] = useState("");
+    const [loading, setLoading] = useState(false);
 
-  const [friends, setFriends] = useState<Friend[]>([]);
-  const [nickname, setNickname] = useState('');
-  const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        async function load() {
+            await Promise.all([refreshFriends(), refreshRequests()]);
+        }
 
-  useEffect(() => {
-    apiService
-      .getFriends('fake-token')
-      .then(setFriends)
-      .catch((e) => console.log('Failed to load friends', e))
-      .finally(() => setLoading(false));
-  }, [apiService]);
+        load();
+    }, []);
 
-  const addFriend = () => {
-    // Flutter implementation is a stub.
-    console.log(`Friend added: ${nickname}`);
-    setNickname('');
-  };
+    async function handleAdd() {
+    try {
+        setLoading(true);
 
-  return (
-    <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <ThemedText type="title" style={styles.title}>
-            Friends
-          </ThemedText>
-          <ThemedText style={styles.subtitle}>Track eco reports from people you trust.</ThemedText>
-        </View>
+        await sendFriendRequest(nickname);
 
-        <EcoCard>
-          <ThemedText style={styles.sectionTitle}>Add friend</ThemedText>
-          <EcoTextInput
-            label="Friend Nickname"
-            value={nickname}
-            onChangeText={setNickname}
-            placeholder="Azizali"
-          />
-          <EcoButton title="Add Friend" onPress={addFriend} disabled={!nickname.trim() || loading} />
-        </EcoCard>
+        setNickname("");
 
-        <View style={styles.spacer} />
+        await refreshRequests();
 
-        <ThemedText style={styles.sectionTitle}>Your list</ThemedText>
+    } catch (e) {
+        console.log(e);
+    } finally {
+        setLoading(false);
+    }
+}
 
-        {loading ? (
-          <ThemedText style={styles.empty}>Loading…</ThemedText>
-        ) : friends.length === 0 ? (
-          <ThemedText style={styles.empty}>No friends yet.</ThemedText>
-        ) : (
-          <FlatList
-            data={friends}
-            keyExtractor={(f) => String(f.id)}
-            scrollEnabled={false}
-            renderItem={({ item }) => (
-              <View style={styles.friendRow}>
-                <View style={styles.avatar} />
-                <View style={{ flex: 1 }}>
-                  <ThemedText style={styles.friendName}>{item.nickname}</ThemedText>
-                </View>
-              </View>
-            )}
-          />
-        )}
-      </ScrollView>
-    </ThemedView>
-  );
+    return (
+        <ThemedView style={styles.container}>
+            <ScrollView contentContainerStyle={styles.content}>
+                <ThemedText type="title">Friends</ThemedText>
+
+                <EcoCard>
+                    <ThemedText style={styles.title}>Add friend</ThemedText>
+
+                    <EcoTextInput
+                        label="Nickname"
+                        value={nickname}
+                        onChangeText={setNickname}
+                    />
+
+                    <EcoButton
+                        title="Send request"
+                        onPress={handleAdd}
+                        disabled={!nickname.trim() || loading}
+                    />
+                </EcoCard>
+
+                <EcoCard>
+                    <ThemedText style={styles.title}>Requests</ThemedText>
+
+                    {!requests || requests.length === 0 ? (
+                        <ThemedText>No requests</ThemedText>
+                    ) : (
+                        (requests ?? []).map((r) => (
+                            <View key={r.request_id} style={styles.row}>
+                                <ThemedText>{r.nickname}</ThemedText>
+
+                                <View style={styles.buttons}>
+                                    <EcoButton
+                                        title="Accept"
+                                        
+                                        onPress={() => {console.log("CLICK ACCEPT", r.request_id);
+                                          accept(r.request_id);}}
+                                    />
+
+                                    <EcoButton
+                                        title="Reject"
+                                        variant="secondary"
+                                        onPress={() => reject(r.request_id)}
+                                    />
+                                </View>
+                            </View>
+                        ))
+                    )}
+                </EcoCard>
+
+                <EcoCard>
+                    <ThemedText style={styles.title}>Friends list</ThemedText>
+
+                    <FlatList
+                        data={friends}
+                        scrollEnabled={false}
+                        keyExtractor={(item) => String(item.id)}
+                        renderItem={({ item }) => (
+                            <View style={styles.row}>
+                                <ThemedText>{item.nickname}</ThemedText>
+
+                                <EcoButton
+                                    title="Remove"
+                                    variant="secondary"
+                                    onPress={() => remove(item.id)}
+                                />
+                            </View>
+                        )}
+                    />
+                </EcoCard>
+            </ScrollView>
+        </ThemedView>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'transparent' },
-  content: { padding: 16, paddingBottom: 28, gap: 14 },
-  header: { gap: 6 },
-  title: { fontWeight: '800' },
-  subtitle: { opacity: 0.85, fontSize: 14, lineHeight: 20 },
-  sectionTitle: { fontWeight: '800', fontSize: 16, marginBottom: 10 },
-  spacer: { height: 2 },
-  empty: { opacity: 0.7 },
-  friendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-    gap: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(0,0,0,0.08)',
-  },
-  avatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 999,
-    backgroundColor: 'rgba(25,195,125,0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(25,195,125,0.25)',
-  },
-  friendName: { fontWeight: '800' },
-});
+    container: {
+        flex: 1,
+    },
 
+    content: {
+        padding: 16,
+        gap: 14,
+    },
+
+    title: {
+        fontWeight: "800",
+        fontSize: 18,
+        marginBottom: 10,
+    },
+
+    row: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingVertical: 10,
+    },
+
+    buttons: {
+        flexDirection: "row",
+        gap: 8,
+    },
+});

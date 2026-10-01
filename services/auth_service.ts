@@ -12,10 +12,13 @@ export class AuthService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
+
     const data = await res.json();
+
     if (data?.access_token) {
       await AuthStorage.save(data.access_token);
     }
+
     return data;
   }
 
@@ -25,6 +28,13 @@ export class AuthService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nickname, email, password }),
     });
-    return res.json();
+
+    const data = await res.json();
+
+    if (data?.access_token) {
+      await AuthStorage.save(data.access_token);
+    }
+
+    return data;
   }
 }

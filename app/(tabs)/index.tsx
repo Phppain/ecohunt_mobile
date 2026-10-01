@@ -9,8 +9,12 @@ import { EcoCard } from '@/components/ui/eco-card';
 import { MapWidget } from '@/components/map/MapWidget';
 import { ECOHUNT } from '@/constants/ecohunt';
 
+
 export default function HomeScreen() {
   const router = useRouter();
+
+  console.log("INDEX.TSX TABS");
+  
 
   return (
     <ThemedView style={styles.container}>

@@ -1,5 +1,12 @@
 import React from 'react';
-import { StyleProp, StyleSheet, Text, TextInput, View, ViewStyle } from 'react-native';
+import {
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  ViewStyle
+} from 'react-native';
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -22,13 +29,25 @@ export function EcoTextInput({
   style,
 }: Props) {
   const scheme = useColorScheme() ?? 'light';
+
   const textColor = Colors[scheme].text;
-  const backgroundColor = Colors[scheme].background === '#fff' ? '#F2F6F3' : 'rgba(255,255,255,0.06)';
-  const borderColor = Colors[scheme].icon;
+
+  const backgroundColor =
+  scheme === 'light'
+    ? '#FFFFFF'
+    : '#0D1B12';
+
+  const borderColor =
+    scheme === 'light'
+      ? '#C9DDD2'
+      : 'rgba(255,255,255,0.15)';
 
   return (
     <View style={[styles.wrapper, style]}>
-      <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+      <Text style={[styles.label, { color: textColor }]}>
+        {label}
+      </Text>
+
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -52,10 +71,12 @@ const styles = StyleSheet.create({
   wrapper: {
     gap: 8,
   },
+
   label: {
     fontSize: 13,
     fontWeight: '700',
   },
+
   input: {
     height: 48,
     paddingHorizontal: 14,
@@ -63,4 +84,3 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 });
-
